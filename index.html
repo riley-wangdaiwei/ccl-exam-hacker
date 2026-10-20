@@ -101,7 +101,7 @@
   <div class="body">
 
     <p class="sechead"><u>FOCUS</u>: Can this document find, in seconds, the fragment your point needs?</p>
-    <p>In the exam you write from a point; this document finds your fragments. State a point — however rough — and every lecture, seminar, case and draft answers with what it holds. Nothing here argues for you; every fragment traces back to its source.</p>
+    <p>In the exam you write from a point; this document finds your fragments. State a point — however rough — and every lecture, seminar, case and draft answers with what it holds. Nothing here argues for you; every fragment traces back to its source. <i>Exam rule: a good essay anticipates and answers the strongest objection to its thesis — hence Section II below.</i></p>
 
     <p class="sechead"><u>REQUIRED READINGS (in this document)</u> :</p>
     <ul class="readings" id="readings"></ul>
@@ -286,6 +286,38 @@ function renderResults(list, toks, aiNotes){
     el.addEventListener('click', () => openReader(el.dataset.chunk)));
 }
 
+/* AI results: summarized + grouped by argument side (exam: a good essay
+   anticipates and answers the strongest objection to its thesis) */
+function renderAIResults(order, toks, notes){
+  const groups = [
+    { key: 'supports',  title: 'I. SUPPORTING ARGUMENTS' },
+    { key: 'counters',  title: 'II. COUNTERARGUMENTS — the strongest objections (your essay must answer these)' },
+    { key: 'qualifies', title: 'III. QUALIFICATIONS & DISTINCTIONS' },
+  ];
+  let html = '', n = 0, total = 0;
+  for (const g of groups){
+    const items = order.filter(r => notes[String(r.id)] && notes[String(r.id)].relation === g.key);
+    if (!items.length) continue;
+    html += `<p class="sechead"><u>${g.title}</u></p>`;
+    for (const r of items){
+      n++; total++;
+      const note = notes[String(r.id)];
+      html += `<div class="document" data-chunk="${esc(String(r.chunk_id != null ? r.chunk_id : r.id))}">
+        <p class="doctitle">DOCUMENT ${n}: ${esc(r.dlabel)}<span class="tier">source</span><span class="tier">AI summary · verify</span></p>
+        <div class="cite">${esc(r.dfile)} — p. ${r.page}${r.ps ? `, paras ${r.ps}–${r.pe}` : ''}</div>
+        ${note.summary ? `<div class="ainote">${esc(note.summary)}</div>` : ''}
+        <div class="snip">${snippet(r.text, toks)}</div>
+      </div>`;
+    }
+  }
+  $('count').textContent = total
+    ? `${total} documents found — grouped by argument side`
+    : 'The AI found no relevant fragments — try rephrasing your point.';
+  $('results').innerHTML = html;
+  document.querySelectorAll('.document').forEach(el =>
+    el.addEventListener('click', () => openReader(el.dataset.chunk)));
+}
+
 function doKeywordSearch(){
   $('aiErr').textContent = '';
   const q = $('q').value.trim();
@@ -320,10 +352,14 @@ async function doAISearch(){
 `You are a retrieval assistant for a Contemporary Constitutional Law exam (Sciences Po). The student gives a rough point/thesis below, in Chinese or English.
 Below are candidate source fragments, each with an [id] and its citation.
 Task: pick the fragments RELEVANT to the student's point, most relevant first.
-For each picked fragment write ONE short line: why it relates to the point, labeled supports / qualifies / counters.
+For each picked fragment return:
+- "relation": "supports" | "qualifies" | "counters" — how it bears on the student's point
+- "summary": 1-2 sentences summarizing what the fragment ITSELF says (its holding, logic or argument) — not your own commentary
+- "note": one short line on how it bears on the student's point
+For "counters" fragments, state the objection at its STRONGEST (steelman it): the exam rewards essays that anticipate and answer the most powerful objection to their thesis.
 Rules:
-- Reply with JSON only: [{"id": 0, "relation": "supports|qualifies|counters", "note": "..."}]
-- Write the note in the student's language (Chinese if they wrote Chinese, English if English).
+- Reply with JSON only: [{"id": 0, "relation": "supports|qualifies|counters", "summary": "...", "note": "..."}]
+- Write summary and note in the student's language (Chinese if they wrote Chinese, English if English).
 - Omit irrelevant fragments. If none are relevant, reply [].
 - Never invent cases or facts; only use the fragments given.
 Student point: """${q}"""
@@ -342,10 +378,10 @@ ${frags}`;
     for (const r of ranked){
       const c = cands[r.id];
       if (!c || !['supports','qualifies','counters'].includes(r.relation)) continue;
-      notes[String(c.id)] = { relation: r.relation, note: r.note || '' };
+      notes[String(c.id)] = { relation: r.relation, note: r.note || '', summary: r.summary || '' };
       order.push({ ...c, kind:'chunk', tier:'source' });
     }
-    renderResults(order, toks, notes);
+    renderAIResults(order, toks, notes);
     if (!order.length) $('count').textContent = 'The AI found no relevant fragments — try rephrasing your point.';
   } catch(e){
     $('aiErr').textContent = 'AI search failed: ' + e.message;
