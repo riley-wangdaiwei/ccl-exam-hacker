@@ -4,6 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>CCL Exam Hacker — Contemporary Constitutional Law</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <style>
   :root { --sp-red: #E30613; --ink: #1a1a1a; --muted: #6b6b6b; }
   * { box-sizing: border-box; }
@@ -22,16 +23,19 @@
   h2.sec { font-size: 15px; letter-spacing: 2px; text-transform: uppercase;
            border-bottom: 1px solid #999; padding-bottom: 6px; margin: 34px 0 16px; }
   h2.sec u { text-decoration-thickness: 2px; text-underline-offset: 4px; }
-  .searchrow { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 12px; }
-  input[type=text], select, textarea {
+  .searchrow { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 12px; align-items: center; }
+  input[type=text], input[type=password], select, textarea {
     font-family: Georgia, serif; font-size: 15px; padding: 9px 12px;
     border: 1px solid #bbb; border-radius: 2px; background: #fff; color: var(--ink); }
-  input[type=text] { flex: 1 1 320px; }
+  input[type=text] { flex: 1 1 280px; }
+  input[type=password] { flex: 1 1 240px; }
+  input[type=file] { font-family: Georgia, serif; font-size: 14px; }
   button { font-family: Georgia, serif; font-size: 14px; letter-spacing: 1px;
            padding: 10px 22px; background: #111; color: #fff; border: none;
            border-radius: 2px; cursor: pointer; text-transform: uppercase; }
   button:hover { background: var(--sp-red); }
   button.ghost { background: #fff; color: #111; border: 1px solid #999; }
+  button:disabled { background: #999; cursor: wait; }
   .filters { display: flex; gap: 10px; flex-wrap: wrap; font-size: 13px;
              color: var(--muted); align-items: center; margin-bottom: 6px; }
   .count { font-size: 13px; color: var(--muted); font-style: italic; margin: 10px 0; }
@@ -44,6 +48,13 @@
           text-transform: uppercase; margin-left: 8px; vertical-align: 1px; }
   .tier-source { background: #111; color: #fff; }
   .tier-my_note { background: #1a3a8f; color: #fff; }
+  .rel { display: inline-block; font-size: 11px; letter-spacing: 1.5px; padding: 2px 8px;
+         text-transform: uppercase; margin-left: 8px; vertical-align: 1px; color: #fff; }
+  .rel-supports { background: #1e6b34; }
+  .rel-qualifies { background: #9a6a00; }
+  .rel-counters { background: #a02020; }
+  .ainote { font-size: 14px; font-style: italic; color: #333; margin: 8px 0 4px;
+            border-left: 3px solid #ccc; padding-left: 10px; }
   .cite { font-size: 13px; color: var(--muted); margin: 6px 0 8px; font-style: italic; }
   .snip { font-size: 15px; line-height: 1.65; }
   mark { background: #ffe58a; padding: 0 1px; }
@@ -59,6 +70,11 @@
   .comment p { margin: 6px 0 0; font-size: 15px; line-height: 1.6; }
   #commentForm textarea { width: 100%; min-height: 90px; margin: 8px 0; }
   .hint { font-size: 13px; color: var(--muted); font-style: italic; }
+  .err { font-size: 14px; color: #a02020; margin: 8px 0; }
+  .uplist { font-size: 14px; margin: 8px 0; }
+  .uplist .urow { display: flex; gap: 10px; align-items: center; padding: 6px 0;
+                  border-top: 1px solid #eee; }
+  .uplist button { padding: 4px 12px; font-size: 12px; }
   .closeRow { text-align: right; margin-bottom: 8px; }
   @media (max-width: 640px) { .doc-head, .body, #reader { padding-left: 22px; padding-right: 22px; } }
 </style>
@@ -73,10 +89,12 @@
     <div class="subtitle">Contemporary Constitutional Law — an interactive source of truth. Every fragment traces back to its document.</div>
   </div>
   <div class="body">
+
     <h2 class="sec"><u>Search</u> the corpus</h2>
     <div class="searchrow">
-      <input id="q" type="text" placeholder="e.g. reasonable observer">
-      <button id="go">Search</button>
+      <input id="q" type="text" placeholder="a keyword — or a fuzzy point, e.g. 私人表达 vs 学校立场怎么区分">
+      <button id="go">Keyword</button>
+      <button id="goAI">AI 语义检索</button>
     </div>
     <div class="filters">
       <label>Document <select id="fDoc"><option value="">all documents</option></select></label>
@@ -88,7 +106,25 @@
       </select></label>
     </div>
     <div class="count" id="count"></div>
+    <div class="err" id="aiErr"></div>
     <div id="results"></div>
+
+    <h2 class="sec"><u>AI</u> key</h2>
+    <div class="hint">For AI 语义检索. Your key is stored only in this browser — never sent anywhere except Google's Gemini API.</div>
+    <div class="searchrow">
+      <input id="apiKey" type="password" placeholder="Gemini API key (AIza…)">
+      <button id="saveKey">Save key</button>
+      <button id="clearKey" class="ghost">Clear</button>
+    </div>
+    <div class="hint" id="keyStatus"></div>
+
+    <h2 class="sec"><u>Upload</u> sources</h2>
+    <div class="hint">Add your own PDFs (new lectures, cases, drafts). Parsed in your browser, searchable instantly, stored on this device only.</div>
+    <div class="searchrow">
+      <input type="file" id="upFile" accept="application/pdf">
+      <button id="upBtn">Upload &amp; index</button>
+    </div>
+    <div class="uplist" id="upList"></div>
 
     <h2 class="sec"><u>My</u> notes</h2>
     <div class="hint">Everything you comment while reading is saved in this browser, searchable above, and always linked back to the extract it discusses.</div>
@@ -122,125 +158,208 @@
 </div>
 
 <script>
+/* ============ storage ============ */
 const $ = id => document.getElementById(id);
 const esc = s => String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;');
-const LS = 'ccl-comments-v1';
-let DOCS = [], CHUNKS = [], DOCBYID = {}, currentChunk = null;
+const LS_C = 'ccl-comments-v1', LS_K = 'ccl-gemini-key', LS_U = 'ccl-uploads-v1';
+const loadJ = (k, fb) => { try { const v = JSON.parse(localStorage.getItem(k)); return v == null ? fb : v; } catch(e){ return fb; } };
+const storeJ = (k, v) => localStorage.setItem(k, JSON.stringify(v));
+const GEMINI_MODEL = 'gemini-2.0-flash';
 
-const loadComments = () => { try { return JSON.parse(localStorage.getItem(LS) || '[]'); } catch(e){ return []; } };
-const storeComments = list => localStorage.setItem(LS, JSON.stringify(list));
+let CHUNKS = [];          // unified: {id, dlabel, dtype, dfile, lecture, page, ps, pe, text, origin}
+let currentChunk = null;
 
-function tokenize(q){ return q.toLowerCase().split(/[^a-z0-9']+/).filter(t => t.length > 1); }
-function rxEscape(t){ return t.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); }
-
-function searchChunks(toks, docType, lecture){
-  const out = [];
-  for (const c of CHUNKS){
-    const doc = DOCBYID[c.doc_id];
-    if (docType && doc.doc_type !== docType) continue;
-    if (lecture && String(doc.lecture) !== lecture) continue;
-    const t = c.text.toLowerCase();
-    let score = 0, ok = true;
-    for (const tok of toks){
-      const n = t.split(tok).length - 1;
-      if (!n){ ok = false; break; }
-      score += n;
-    }
-    if (ok) out.push({ kind:'chunk', id:c.id, chunk_id:c.id, tier:'source',
-      doc_label:doc.label, doc_type:doc.doc_type, page:c.page,
-      para_start:c.para_start, para_end:c.para_end, score });
-  }
-  out.sort((a,b) => b.score - a.score);
-  return out.slice(0, 40);
+/* ============ corpus + uploads ============ */
+function rebuildIndex(corpusDocs, corpusChunks){
+  const byId = Object.fromEntries(corpusDocs.map(d => [d.id, d]));
+  CHUNKS = corpusChunks.map(c => {
+    const d = byId[c.doc_id];
+    return { id: 'c' + c.id, dlabel: d.label, dtype: d.doc_type, dfile: d.filename,
+             lecture: d.lecture, page: c.page, ps: c.para_start, pe: c.para_end,
+             text: c.text, origin: 'corpus' };
+  });
+  for (const u of loadJ(LS_U, []))
+    for (const c of u.chunks)
+      CHUNKS.push({ id: c.id, dlabel: u.name + ' (uploaded)', dtype: 'uploaded',
+                    dfile: u.name, lecture: null, page: c.page, ps: c.ps, pe: c.pe,
+                    text: c.text, origin: 'upload' });
+  initFilters(corpusDocs);
+  $('count').textContent = `${CHUNKS.length} fragments indexed. Type to search.`;
 }
 
-function searchComments(toks){
+function initFilters(docs){
+  const seen = new Set();
+  const types = [...new Set(CHUNKS.map(c => c.dtype))];
+  const lecs = [...new Set(CHUNKS.map(c => c.lecture).filter(x => x != null))].sort();
+  $('fDoc').innerHTML = '<option value="">all documents</option>';
+  for (const t of types) $('fDoc').insertAdjacentHTML('beforeend', `<option value="${t}">${t.replace(/_/g,' ')}</option>`);
+  $('fLec').innerHTML = '<option value="">all</option>';
+  for (const l of lecs) $('fLec').insertAdjacentHTML('beforeend', `<option value="${l}">Lecture ${l}</option>`);
+}
+
+/* ============ keyword search ============ */
+const tokenize = q => q.toLowerCase().split(/[^a-z0-9'\u4e00-\u9fff]+/).filter(t => t.length > 1);
+const rxE = t => t.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
+function scoreChunk(c, toks){
+  const t = c.text.toLowerCase();
+  let s = 0;
+  for (const tok of toks){ const n = t.split(tok).length - 1; if (!n) return -1; s += n; }
+  return s;
+}
+function keywordSearch(toks, docType, lecture, anyToken){
   const out = [];
-  for (const m of loadComments()){
-    const t = m.text.toLowerCase();
-    let score = 0, ok = true;
+  for (const c of CHUNKS){
+    if (docType && c.dtype !== docType) continue;
+    if (lecture && String(c.lecture) !== lecture) continue;
+    const t = c.text.toLowerCase();
+    let s = 0, hit = anyToken ? false : true;
     for (const tok of toks){
       const n = t.split(tok).length - 1;
-      if (!n){ ok = false; break; }
-      score += n;
+      if (anyToken){ if (n){ hit = true; s += n; } }
+      else { if (!n){ hit = false; break; } s += n; }
     }
+    if (hit && s > 0) out.push({ ...c, score: s });
+  }
+  out.sort((a,b) => b.score - a.score);
+  return out;
+}
+function searchComments(toks){
+  const out = [];
+  for (const m of loadJ(LS_C, [])){
+    const t = m.text.toLowerCase();
+    let s = 0, ok = true;
+    for (const tok of toks){ const n = t.split(tok).length - 1; if (!n){ ok = false; break; } s += n; }
     if (!ok) continue;
-    const c = CHUNKS.find(x => x.id === m.chunk_id);
-    const doc = c ? DOCBYID[c.doc_id] : null;
-    out.push({ kind:'comment', id:m.id, chunk_id:m.chunk_id, tier:'my_note', tag:m.tag,
-      doc_label: doc ? doc.label : 'unknown document', page: c ? c.page : '–', score });
+    const c = CHUNKS.find(x => String(x.id) === String(m.chunk_id));
+    out.push({ kind:'comment', cid: m.id, chunk_id: m.chunk_id, tier:'my_note', tag: m.tag,
+      dlabel: c ? c.dlabel : 'unknown document', page: c ? c.page : '–',
+      text: m.text, score: s });
   }
   out.sort((a,b) => b.score - a.score);
   return out.slice(0, 20);
 }
 
-function snippetForChunk(id, toks){
-  const c = CHUNKS.find(x => x.id === id);
-  const low = c.text.toLowerCase();
+function snippet(text, toks, len){
+  len = len || 300;
+  const low = text.toLowerCase();
   let idx = -1;
   for (const tok of toks){ const i = low.indexOf(tok); if (i >= 0 && (idx < 0 || i < idx)) idx = i; }
   if (idx < 0) idx = 0;
   const start = Math.max(0, idx - 90);
-  let s = c.text.slice(start, start + 300);
+  let s = text.slice(start, start + len);
   if (start > 0) s = '…' + s;
-  if (start + 300 < c.text.length) s += '…';
+  if (start + len < text.length) s += '…';
   let e = esc(s);
-  for (const tok of toks) e = e.replace(new RegExp('(' + rxEscape(tok) + ')', 'gi'), '<mark>$1</mark>');
+  for (const tok of toks) e = e.replace(new RegExp('(' + rxE(tok) + ')', 'gi'), '<mark>$1</mark>');
   return e;
 }
-function snippetForComment(m, toks){
-  let e = esc(m.text.slice(0, 280));
-  for (const tok of toks) e = e.replace(new RegExp('(' + rxEscape(tok) + ')', 'gi'), '<mark>$1</mark>');
-  return e;
+const tierBadge = t => t === 'my_note'
+  ? '<span class="tier tier-my_note">My note</span>' : '<span class="tier tier-source">Source</span>';
+const relBadge = r => `<span class="rel rel-${r}">${r}</span>`;
+
+function renderResults(list, toks, aiNotes){
+  aiNotes = aiNotes || {};
+  $('count').textContent = list.length
+    ? `${list.length} fragment${list.length > 1 ? 's' : ''} found`
+    : 'No fragments found — try fewer or different words.';
+  $('results').innerHTML = list.map((r, i) => {
+    const note = aiNotes[String(r.id)];
+    return `<div class="extract" data-chunk="${esc(String(r.chunk_id != null ? r.chunk_id : r.id))}">
+      <span class="exno">Extract ${i+1}</span>${tierBadge(r.tier || 'source')}${note ? relBadge(note.relation) : ''}
+      ${r.kind === 'comment' ? `<span style="font-size:11px;letter-spacing:1.5px;text-transform:uppercase;color:#1a3a8f"> · ${esc(r.tag || 'note')}</span>` : ''}
+      <div class="cite">${esc(r.dlabel)} — p. ${r.page}${r.ps ? `, paras ${r.ps}–${r.pe}` : ''}</div>
+      ${note ? `<div class="ainote">${esc(note.note)}</div>` : ''}
+      <div class="snip">${snippet(r.text, toks)}</div>
+    </div>`;
+  }).join('');
+  document.querySelectorAll('.extract').forEach(el =>
+    el.addEventListener('click', () => openReader(el.dataset.chunk)));
 }
 
-function tierBadge(t){
-  return t === 'my_note'
-    ? '<span class="tier tier-my_note">My note</span>'
-    : '<span class="tier tier-source">Source</span>';
-}
-
-function doSearch(){
+function doKeywordSearch(){
+  $('aiErr').textContent = '';
   const q = $('q').value.trim();
   if (!q) return;
   const toks = tokenize(q);
   if (!toks.length) return;
   const tier = $('fTier').value, docType = $('fDoc').value, lecture = $('fLec').value;
   let res = [];
-  if (tier !== 'my_note') res = res.concat(searchChunks(toks, docType, lecture));
+  if (tier !== 'my_note')
+    res = res.concat(keywordSearch(toks, docType, lecture, false).map(c => ({ ...c, kind:'chunk', tier:'source' })));
   if (tier !== 'source' && !docType) res = res.concat(searchComments(toks));
   res.sort((a,b) => b.score - a.score);
-  $('count').textContent = res.length
-    ? `${res.length} fragment${res.length > 1 ? 's' : ''} found`
-    : 'No fragments found — try fewer or different words.';
-  $('results').innerHTML = res.map((r, i) => `
-    <div class="extract" data-chunk="${r.chunk_id}">
-      <span class="exno">Extract ${i+1}</span>${tierBadge(r.tier)}
-      ${r.kind === 'comment' ? `<span style="font-size:11px;letter-spacing:1.5px;text-transform:uppercase;color:#1a3a8f"> · ${esc(r.tag || 'note')}</span>` : ''}
-      <div class="cite">${esc(r.doc_label)} — p. ${r.page}${r.para_start ? `, paras ${r.para_start}–${r.para_end}` : ''}</div>
-      <div class="snip">${r.kind === 'comment'
-        ? snippetForComment(loadComments().find(m => m.id === r.id), toks)
-        : snippetForChunk(r.chunk_id, toks)}</div>
-    </div>`).join('');
-  document.querySelectorAll('.extract').forEach(el =>
-    el.addEventListener('click', () => openReader(+el.dataset.chunk)));
+  renderResults(res.slice(0, 40), toks);
 }
 
+/* ============ AI semantic search (Gemini rerank) ============ */
+async function doAISearch(){
+  $('aiErr').textContent = '';
+  const key = (localStorage.getItem(LS_K) || '').trim();
+  const q = $('q').value.trim();
+  if (!q) return;
+  if (!key){ $('aiErr').textContent = 'Fill in your Gemini API key below first — AI 语义检索 needs it.'; return; }
+  const btn = $('goAI');
+  btn.disabled = true; btn.textContent = '…';
+  try {
+    const toks = tokenize(q);
+    const cands = keywordSearch(toks.length ? toks : ['the'], $('fDoc').value, $('fLec').value, true).slice(0, 30);
+    if (!cands.length) throw new Error('no candidates');
+    const frags = cands.map((c, i) =>
+      `[${i}] ${c.dlabel} — p.${c.page}: ${c.text.slice(0, 500)}`).join('\n\n');
+    const prompt =
+`You are a retrieval assistant for a Contemporary Constitutional Law exam (Sciences Po). The student gives a rough point/thesis below, in Chinese or English.
+Below are candidate source fragments, each with an [id] and its citation.
+Task: pick the fragments RELEVANT to the student's point, most relevant first.
+For each picked fragment write ONE short line: why it relates to the point, labeled supports / qualifies / counters.
+Rules:
+- Reply with JSON only: [{"id": 0, "relation": "supports|qualifies|counters", "note": "..."}]
+- Write the note in the student's language (Chinese if they wrote Chinese, English if English).
+- Omit irrelevant fragments. If none are relevant, reply [].
+- Never invent cases or facts; only use the fragments given.
+Student point: """${q}"""
+Fragments:
+${frags}`;
+    const resp = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent?key=${encodeURIComponent(key)}`, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }],
+        generationConfig: { responseMimeType: 'application/json', temperature: 0.2 } })
+    });
+    if (!resp.ok) throw new Error('Gemini API error ' + resp.status + ' — check your key.');
+    const data = await resp.json();
+    const raw = (((data.candidates || [])[0] || {}).content || {}).parts || [];
+    const ranked = JSON.parse(raw.map(p => p.text || '').join(''));
+    const notes = {}, order = [];
+    for (const r of ranked){
+      const c = cands[r.id];
+      if (!c || !['supports','qualifies','counters'].includes(r.relation)) continue;
+      notes[String(c.id)] = { relation: r.relation, note: r.note || '' };
+      order.push({ ...c, kind:'chunk', tier:'source' });
+    }
+    renderResults(order, toks, notes);
+    if (!order.length) $('count').textContent = 'AI found no relevant fragments — try rephrasing your point.';
+  } catch(e){
+    $('aiErr').textContent = 'AI 检索失败：' + e.message;
+  } finally {
+    btn.disabled = false; btn.textContent = 'AI 语义检索';
+  }
+}
+
+/* ============ reader + comments ============ */
 function openReader(chunkId){
-  const c = CHUNKS.find(x => x.id === chunkId);
+  const c = CHUNKS.find(x => String(x.id) === String(chunkId));
   if (!c) return;
-  const doc = DOCBYID[c.doc_id];
-  currentChunk = { ...c, doc };
-  $('rExno').textContent = 'Source · ' + doc.doc_type.replace(/_/g, ' ');
-  $('rTitle').textContent = doc.label;
-  $('rCite').textContent = `${doc.filename} — p. ${c.page}, paras ${c.para_start}–${c.para_end}`;
+  currentChunk = c;
+  $('rExno').textContent = 'Source · ' + c.dtype.replace(/_/g, ' ') + (c.origin === 'upload' ? ' · uploaded' : '');
+  $('rTitle').textContent = c.dlabel;
+  $('rCite').textContent = `${c.dfile} — p. ${c.page}${c.ps ? `, paras ${c.ps}–${c.pe}` : ''}`;
   $('rText').textContent = c.text;
   renderComments();
   $('cText').value = '';
   $('readerWrap').style.display = 'block';
   document.body.style.overflow = 'hidden';
 }
-function commentsFor(id){ return loadComments().filter(m => m.chunk_id === id); }
+const commentsFor = id => loadJ(LS_C, []).filter(m => String(m.chunk_id) === String(id));
 function renderComments(){
   const list = commentsFor(currentChunk.id);
   $('rComments').innerHTML = list.length ? list.map(m => `
@@ -249,50 +368,133 @@ function renderComments(){
     : '<div class="hint">No comments yet on this extract.</div>';
 }
 function closeReader(){ $('readerWrap').style.display = 'none'; document.body.style.overflow = ''; }
-
 function saveComment(){
   const text = $('cText').value.trim();
   if (!text || !currentChunk) return;
   const sel = window.getSelection().toString().trim();
   const body = sel ? `> ${sel}\n\n${text}` : text;
-  const list = loadComments();
+  const list = loadJ(LS_C, []);
   list.unshift({ id: Date.now(), chunk_id: currentChunk.id, text: body,
     tag: $('cTag').value, created_at: new Date().toISOString().slice(0, 16).replace('T', ' ') });
-  storeComments(list);
+  storeJ(LS_C, list);
   $('cText').value = '';
-  renderComments();
-  loadNotes();
+  renderComments(); loadNotes();
 }
-
 function loadNotes(){
-  const notes = loadComments();
+  const notes = loadJ(LS_C, []);
   $('notes').innerHTML = notes.length ? notes.map(m => {
-    const c = CHUNKS.find(x => x.id === m.chunk_id);
-    const doc = c ? DOCBYID[c.doc_id] : null;
+    const c = CHUNKS.find(x => String(x.id) === String(m.chunk_id));
     return `<div class="comment"><span class="ctag">${esc(m.tag)}</span><span class="cdate">${esc(m.created_at)}</span>
-      <div class="cite">${esc(doc ? doc.label : '')}${c ? ' — p. ' + c.page : ''}</div>
+      <div class="cite">${esc(c ? c.dlabel : '')}${c ? ' — p. ' + c.page : ''}</div>
       <p>${esc(m.text).replace(/\n/g, '<br>')}</p></div>`;
   }).join('') : '<div class="hint">No notes yet. Open any extract and comment on it.</div>';
 }
 
-function initFilters(){
-  const types = [...new Set(DOCS.map(d => d.doc_type))];
-  const lecs = [...new Set(DOCS.map(d => d.lecture).filter(x => x != null))].sort();
-  for (const t of types) $('fDoc').insertAdjacentHTML('beforeend', `<option value="${t}">${t.replace(/_/g, ' ')}</option>`);
-  for (const l of lecs) $('fLec').insertAdjacentHTML('beforeend', `<option value="${l}">Lecture ${l}</option>`);
+/* ============ API key ============ */
+function refreshKeyStatus(){
+  const k = (localStorage.getItem(LS_K) || '').trim();
+  $('keyStatus').textContent = k ? 'Key saved ✓ (stored only in this browser)' : 'No key saved.';
+  if (k) $('apiKey').value = '';
+}
+$('saveKey').onclick = () => {
+  const v = $('apiKey').value.trim();
+  if (!v) return;
+  localStorage.setItem(LS_K, v);
+  refreshKeyStatus();
+};
+$('clearKey').onclick = () => { localStorage.removeItem(LS_K); refreshKeyStatus(); };
+
+/* ============ upload PDFs ============ */
+if (window.pdfjsLib) pdfjsLib.GlobalWorkerOptions.workerSrc =
+  'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+
+function chunkText(text){
+  const paras = text.split(/\n\s*\n/).map(p => p.replace(/\s+/g, ' ').trim()).filter(Boolean);
+  const out = [];
+  let buf = [], start = 0;
+  const flush = end => { if (buf.length) out.push({ text: buf.join(' '), ps: start + 1, pe: end }); buf = []; };
+  paras.forEach((p, i) => {
+    if (!buf.length) start = i;
+    const cur = buf.join(' ').length;
+    if (buf.length && cur + p.length > 900){ flush(i); start = i; }
+    buf.push(p);
+    if (buf.join(' ').length >= 600) flush(i + 1);
+  });
+  if (buf.length) flush(paras.length);
+  return out;
 }
 
-$('go').onclick = doSearch;
-$('q').addEventListener('keydown', e => { if (e.key === 'Enter') doSearch(); });
+async function pdfToChunks(file){
+  const buf = await file.arrayBuffer();
+  const pdf = await pdfjsLib.getDocument({ data: buf }).promise;
+  const chunks = [];
+  const docId = 'u' + Date.now().toString(36);
+  for (let i = 1; i <= pdf.numPages; i++){
+    const page = await pdf.getPage(i);
+    const tc = await page.getTextContent();
+    let t = '';
+    for (const it of tc.items) t += it.str + (it.hasEOL ? '\n' : ' ');
+    t = t.replace(/[ \t]+/g, ' ').replace(/\n{3,}/g, '\n\n').trim();
+    if (!t) continue;
+    chunkText(t).forEach((ch, n) => chunks.push({
+      id: `${docId}-${i}-${n}`, page: i, ps: ch.ps, pe: ch.pe, text: ch.text }));
+  }
+  return { docId, name: file.name.replace(/\.pdf$/i, ''), chunks };
+}
+
+$('upBtn').onclick = async () => {
+  const f = $('upFile').files[0];
+  if (!f) return;
+  const btn = $('upBtn');
+  btn.disabled = true; btn.textContent = 'Parsing…';
+  try {
+    const { docId, name, chunks } = await pdfToChunks(f);
+    if (!chunks.length) throw new Error('no text found in this PDF');
+    const ups = loadJ(LS_U, []);
+    ups.push({ docId, name, chunks });
+    storeJ(LS_U, ups);
+    boot(true);
+    renderUploads();
+    $('upFile').value = '';
+  } catch(e){
+    alert('Upload failed: ' + e.message);
+  } finally {
+    btn.disabled = false; btn.textContent = 'Upload & index';
+  }
+};
+function renderUploads(){
+  const ups = loadJ(LS_U, []);
+  $('upList').innerHTML = ups.length ? ups.map(u =>
+    `<div class="urow"><span>📄 ${esc(u.name)} — ${u.chunks.length} fragments</span>
+     <button class="ghost" data-del="${u.docId}">Delete</button></div>`).join('')
+    : '<div class="hint">No uploaded documents yet.</div>';
+  document.querySelectorAll('[data-del]').forEach(b => b.onclick = () => {
+    storeJ(LS_U, loadJ(LS_U, []).filter(u => u.docId !== b.dataset.del));
+    // drop its comments too
+    storeJ(LS_C, loadJ(LS_C, []).filter(m => !String(m.chunk_id).startsWith(b.dataset.del)));
+    boot(true); renderUploads();
+  });
+}
+
+/* ============ boot ============ */
+let corpusDocs = [], corpusChunks = [];
+function boot(keepQuery){
+  rebuildIndex(corpusDocs, corpusChunks);
+  renderUploads();
+  loadNotes();
+  if (!keepQuery) $('count').textContent = `${CHUNKS.length} fragments indexed. Type to search.`;
+}
+$('go').onclick = doKeywordSearch;
+$('goAI').onclick = doAISearch;
+$('q').addEventListener('keydown', e => { if (e.key === 'Enter') doKeywordSearch(); });
 $('closeReader').onclick = closeReader;
 $('readerWrap').addEventListener('click', e => { if (e.target.id === 'readerWrap') closeReader(); });
 $('cSave').onclick = saveComment;
+refreshKeyStatus();
 
 fetch('corpus.json').then(r => r.json()).then(d => {
-  DOCS = d.docs; CHUNKS = d.chunks;
-  DOCBYID = Object.fromEntries(DOCS.map(x => [x.id, x]));
-  initFilters(); loadNotes();
-  $('count').textContent = `${CHUNKS.length} fragments indexed across ${DOCS.length} documents. Type to search.`;
+  corpusDocs = d.docs; corpusChunks = d.chunks;
+  boot(false);
 }).catch(() => { $('count').textContent = 'Could not load corpus.json.'; });
 </script>
 </body>
