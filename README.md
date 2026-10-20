@@ -27,11 +27,11 @@ app runs in the browser; your comments stay in your browser's localStorage.
   snippet highlights, a document-style reader, and highlight-to-comment.
   Comments are searchable as `my_note` tier and link back to the extract.
 - **Step 03 — AI semantic search**: paste a fuzzy thesis (Chinese or English)
-  into the search box and hit **AI 语义检索**. Keyword matches prefilter the
+  into the search box and hit **AI semantic search**. Keyword matches prefilter the
   corpus, then Gemini ranks the fragments and labels each
   `supports / qualifies / counters` with a one-line note. AI retrieves; it
   never argues for you and never invents cases. Bring your own Gemini API
-  key — saved in the **AI key** section, stored only in your browser.
+  key (get one from https://aistudio.google.com/api-keys) — saved in the **AI key** section, stored only in your browser.
 - **Uploads**: add your own PDFs in the **Upload sources** section — parsed
   in your browser (pdf.js), chunked, searchable instantly, stored on your
   device only (localStorage), deletable any time.
