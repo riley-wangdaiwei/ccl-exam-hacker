@@ -18,10 +18,15 @@ app runs in the browser; your comments stay in your browser's localStorage.
   `index.html` searches it in-browser with document / lecture / tier filters,
   snippet highlights, a document-style reader, and highlight-to-comment.
   Comments are searchable as `my_note` tier and link back to the extract.
-- **Step 03 — fragment engine** (planned): paste a fuzzy thesis, get ranked
-  fragments (original text + source + one-line why-relevant) across all tiers.
-  AI retrieves; it never argues for you and never invents cases. Bring your
-  own Gemini API key — entered in the app, stored only in your browser.
+- **Step 03 — AI semantic search**: paste a fuzzy thesis (Chinese or English)
+  into the search box and hit **AI 语义检索**. Keyword matches prefilter the
+  corpus, then Gemini ranks the fragments and labels each
+  `supports / qualifies / counters` with a one-line note. AI retrieves; it
+  never argues for you and never invents cases. Bring your own Gemini API
+  key — saved in the **AI key** section, stored only in your browser.
+- **Uploads**: add your own PDFs in the **Upload sources** section — parsed
+  in your browser (pdf.js), chunked, searchable instantly, stored on your
+  device only (localStorage), deletable any time.
 
 ## Authority tiers
 
