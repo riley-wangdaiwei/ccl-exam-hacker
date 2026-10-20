@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CCL Exam Hacker — Contemporary Constitutional Law</title>
+<style>
+  :root { --sp-red: #E30613; --ink: #1a1a1a; --muted: #6b6b6b; }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: #e8e8e8; color: var(--ink);
+         font-family: Georgia, 'Times New Roman', serif; }
+  .doc { max-width: 960px; margin: 28px auto 60px; background: #fff;
+         box-shadow: 0 2px 14px rgba(0,0,0,.18); padding: 0 0 48px; }
+  .doc-head { padding: 34px 56px 0; }
+  .brand { font-size: 30px; font-weight: bold; letter-spacing: .5px; }
+  .redrule { height: 5px; background: var(--sp-red); margin-top: 10px; }
+  .meta { margin-top: 14px; font-size: 12.5px; letter-spacing: 2.5px;
+          text-transform: uppercase; color: var(--muted); }
+  h1 { font-size: 34px; margin: 18px 0 4px; letter-spacing: 1px; }
+  .subtitle { font-size: 15px; color: var(--muted); font-style: italic; margin-bottom: 6px; }
+  .body { padding: 0 56px; }
+  h2.sec { font-size: 15px; letter-spacing: 2px; text-transform: uppercase;
+           border-bottom: 1px solid #999; padding-bottom: 6px; margin: 34px 0 16px; }
+  h2.sec u { text-decoration-thickness: 2px; text-underline-offset: 4px; }
+  .searchrow { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 12px; }
+  input[type=text], select, textarea {
+    font-family: Georgia, serif; font-size: 15px; padding: 9px 12px;
+    border: 1px solid #bbb; border-radius: 2px; background: #fff; color: var(--ink); }
+  input[type=text] { flex: 1 1 320px; }
+  button { font-family: Georgia, serif; font-size: 14px; letter-spacing: 1px;
+           padding: 10px 22px; background: #111; color: #fff; border: none;
+           border-radius: 2px; cursor: pointer; text-transform: uppercase; }
+  button:hover { background: var(--sp-red); }
+  button.ghost { background: #fff; color: #111; border: 1px solid #999; }
+  .filters { display: flex; gap: 10px; flex-wrap: wrap; font-size: 13px;
+             color: var(--muted); align-items: center; margin-bottom: 6px; }
+  .count { font-size: 13px; color: var(--muted); font-style: italic; margin: 10px 0; }
+  .extract { border: 1px solid #ddd; border-left: 4px solid var(--sp-red);
+             padding: 14px 18px; margin: 12px 0; cursor: pointer; background: #fff; }
+  .extract:hover { background: #fafafa; }
+  .extract .exno { font-size: 12px; letter-spacing: 2px; color: var(--muted);
+                   text-transform: uppercase; }
+  .tier { display: inline-block; font-size: 11px; letter-spacing: 1.5px; padding: 2px 8px;
+          text-transform: uppercase; margin-left: 8px; vertical-align: 1px; }
+  .tier-source { background: #111; color: #fff; }
+  .tier-my_note { background: #1a3a8f; color: #fff; }
+  .cite { font-size: 13px; color: var(--muted); margin: 6px 0 8px; font-style: italic; }
+  .snip { font-size: 15px; line-height: 1.65; }
+  mark { background: #ffe58a; padding: 0 1px; }
+  /* reader */
+  #readerWrap { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.45);
+                overflow-y: auto; z-index: 10; }
+  #reader { max-width: 860px; margin: 40px auto; background: #fff; padding: 40px 56px;
+            box-shadow: 0 4px 24px rgba(0,0,0,.3); }
+  #reader .fulltext { font-size: 16px; line-height: 1.8; white-space: pre-wrap; }
+  .comment { border-top: 1px solid #ddd; padding: 12px 0; }
+  .comment .ctag { font-size: 11px; letter-spacing: 1.5px; text-transform: uppercase;
+                   color: #1a3a8f; }
+  .comment .cdate { font-size: 12px; color: var(--muted); margin-left: 8px; }
+  .comment p { margin: 6px 0 0; font-size: 15px; line-height: 1.6; }
+  #commentForm textarea { width: 100%; min-height: 90px; margin: 8px 0; }
+  .hint { font-size: 13px; color: var(--muted); font-style: italic; }
+  .closeRow { text-align: right; margin-bottom: 8px; }
+  @media (max-width: 640px) { .doc-head, .body, #reader { padding-left: 22px; padding-right: 22px; } }
+</style>
+</head>
+<body>
+<div class="doc">
+  <div class="doc-head">
+    <div class="brand">Sciences Po</div>
+    <div class="redrule"></div>
+    <div class="meta">Année universitaire 2026/2027 &nbsp;·&nbsp; Collège universitaire &nbsp;·&nbsp; Autumn Semester</div>
+    <h1>CCL EXAM HACKER</h1>
+    <div class="subtitle">Contemporary Constitutional Law — an interactive source of truth. Every fragment traces back to its document.</div>
+  </div>
+  <div class="body">
+    <h2 class="sec"><u>Search</u> the corpus</h2>
+    <div class="searchrow">
+      <input id="q" type="text" placeholder='e.g. reasonable observer — or a fuzzy idea like "private prayer vs endorsement"'>
+      <button id="go">Search</button>
+    </div>
+    <div class="filters">
+      <label>Document <select id="fDoc"><option value="">all documents</option></select></label>
+      <label>Lecture <select id="fLec"><option value="">all</option></select></label>
+      <label>Tier <select id="fTier">
+        <option value="">sources + my notes</option>
+        <option value="source">sources only</option>
+        <option value="my_note">my notes only</option>
+      </select></label>
+    </div>
+    <div class="count" id="count"></div>
+    <div id="results"></div>
+
+    <h2 class="sec"><u>My</u> notes</h2>
+    <div class="hint">Everything you comment while reading is saved here, searchable above, and always linked back to the extract it discusses.</div>
+    <div id="notes"></div>
+  </div>
+</div>
+
+<div id="readerWrap">
+  <div id="reader">
+    <div class="closeRow"><button class="ghost" id="closeReader">Close ✕</button></div>
+    <div class="exno" id="rExno"></div>
+    <h2 id="rTitle" style="margin:6px 0"></h2>
+    <div class="cite" id="rCite"></div>
+    <div class="fulltext" id="rText"></div>
+    <h2 class="sec"><u>Comments</u></h2>
+    <div id="rComments"></div>
+    <h2 class="sec"><u>Add</u> a comment</h2>
+    <div class="hint">Select any passage above first — it will be quoted into your comment.</div>
+    <div id="commentForm">
+      <textarea id="cText" placeholder="Your analysis, question, or counterargument…"></textarea>
+      <div class="searchrow">
+        <select id="cTag">
+          <option value="note">My analysis / interpretation</option>
+          <option value="question">Question to investigate</option>
+          <option value="counterargument">Counterargument / objection</option>
+        </select>
+        <button id="cSave">Save comment</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+const $ = id => document.getElementById(id);
+let currentChunk = null;
+
+async function api(path, opts) {
+  const r = await fetch(path, opts);
+  if (!r.ok) throw new Error(await r.text());
+  return r.json();
+}
+const esc = s => s.replace(/&/g,'&amp;').replace(/</g,'&lt;');
+
+async function initFilters() {
+  const docs = await api('/api/docs');
+  const types = [...new Set(docs.map(d => d.doc_type))];
+  const lecs = [...new Set(docs.map(d => d.lecture).filter(x => x != null))].sort();
+  for (const t of types) $('fDoc').insertAdjacentHTML('beforeend', `<option value="${t}">${t.replace(/_/g,' ')}</option>`);
+  for (const l of lecs) $('fLec').insertAdjacentHTML('beforeend', `<option value="${l}">Lecture ${l}</option>`);
+}
+
+function tierBadge(t) {
+  return t === 'my_note'
+    ? '<span class="tier tier-my_note">My note</span>'
+    : '<span class="tier tier-source">Source</span>';
+}
+
+async function doSearch() {
+  const q = $('q').value.trim();
+  if (!q) return;
+  const p = new URLSearchParams({ q,
+    doc_type: $('fDoc').value, lecture: $('fLec').value, tier: $('fTier').value });
+  const res = await api('/api/search?' + p);
+  $('count').textContent = res.length ? `${res.length} fragment${res.length>1?'s':''} found` : 'No fragments found — try fewer or different words.';
+  $('results').innerHTML = res.map((r, i) => `
+    <div class="extract" data-kind="${r.kind}" data-id="${r.id}" data-chunk="${r.chunk_id || r.id}">
+      <span class="exno">Extract ${i+1}</span>${tierBadge(r.tier)}
+      ${r.kind==='comment' ? `<span class="ctag" style="font-size:11px;letter-spacing:1.5px;text-transform:uppercase;color:#1a3a8f"> · ${esc(r.tag||'note')}</span>` : ''}
+      <div class="cite">${esc(r.doc_label)} — p. ${r.page}${r.para_start ? `, paras ${r.para_start}–${r.para_end}` : ''}</div>
+      <div class="snip">${r.snippet}</div>
+    </div>`).join('');
+  document.querySelectorAll('.extract').forEach(el => el.addEventListener('click', () => {
+    openReader(+el.dataset.chunk);
+  }));
+}
+
+async function openReader(id) {
+  const c = await api('/api/chunk/' + id);
+  currentChunk = c;
+  $('rExno').textContent = 'Source · ' + c.doc_type.replace(/_/g, ' ');
+  $('rTitle').textContent = c.label;
+  $('rCite').textContent = `${c.filename} — p. ${c.page}, paras ${c.para_start}–${c.para_end}`;
+  $('rText').textContent = c.text;
+  renderComments(c.comments);
+  $('cText').value = '';
+  $('readerWrap').style.display = 'block';
+  document.body.style.overflow = 'hidden';
+}
+function renderComments(list) {
+  $('rComments').innerHTML = list.length ? list.map(m => `
+    <div class="comment"><span class="ctag">${esc(m.tag)}</span><span class="cdate">${esc(m.created_at)}</span>
+    <p>${esc(m.text).replace(/\n/g,'<br>')}</p></div>`).join('')
+    : '<div class="hint">No comments yet on this extract.</div>';
+}
+function closeReader() { $('readerWrap').style.display = 'none'; document.body.style.overflow = ''; }
+
+async function saveComment() {
+  const text = $('cText').value.trim();
+  if (!text || !currentChunk) return;
+  const sel = window.getSelection().toString().trim();
+  const body = sel ? `> ${sel}\n\n${text}` : text;
+  const saved = await api('/api/comments', { method: 'POST',
+    headers: {'Content-Type':'application/json'},
+    body: JSON.stringify({ chunk_id: currentChunk.id, text: body, tag: $('cTag').value }) });
+  const list = await api('/api/comments?chunk_id=' + currentChunk.id);
+  renderComments(list);
+  $('cText').value = '';
+  loadNotes();
+}
+
+async function loadNotes() {
+  const notes = await api('/api/comments');
+  $('notes').innerHTML = notes.length ? notes.map(m => `
+    <div class="comment"><span class="ctag">${esc(m.tag)}</span><span class="cdate">${esc(m.created_at)}</span>
+    <div class="cite">${esc(m.doc_label)} — p. ${m.page}</div>
+    <p>${esc(m.text).replace(/\n/g,'<br>')}</p></div>`).join('')
+    : '<div class="hint">No notes yet. Open any extract and comment on it.</div>';
+}
+
+$('go').onclick = doSearch;
+$('q').addEventListener('keydown', e => { if (e.key === 'Enter') doSearch(); });
+$('closeReader').onclick = closeReader;
+$('readerWrap').addEventListener('click', e => { if (e.target.id === 'readerWrap') closeReader(); });
+$('cSave').onclick = saveComment;
+initFilters().then(loadNotes);
+</script>
+</body>
+</html>
