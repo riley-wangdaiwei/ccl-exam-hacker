@@ -133,7 +133,7 @@
       <input id="apiKey" class="inline" type="password" placeholder="AIza…">
       <u class="act" id="saveKey">save</u> · <u class="act" id="clearKey">clear</u>
       <span class="hint" id="keyStatus"></span><br>
-      Model: <input id="apiModel" class="inline" type="text" style="width:220px" placeholder="gemini-2.0-flash">
+      Model: <input id="apiModel" class="inline" type="text" style="width:220px" placeholder="gemini-3.5-flash-lite">
       <u class="act" id="saveModel">save</u>
       <span class="hint" id="modelStatus"></span>
     </p>
@@ -175,7 +175,7 @@ const esc = s => String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;');
 const loadJ = (k, fb) => { try { const v = JSON.parse(localStorage.getItem(k)); return v == null ? fb : v; } catch(e){ return fb; } };
 const storeJ = (k, v) => localStorage.setItem(k, JSON.stringify(v));
 const LS_C = 'ccl-comments-v1', LS_K = 'ccl-gemini-key', LS_U = 'ccl-uploads-v1', LS_M = 'ccl-gemini-model';
-const DEFAULT_MODEL = 'gemini-2.0-flash';
+const DEFAULT_MODEL = 'gemini-3.5-flash-lite';
 const geminiModel = () => (localStorage.getItem(LS_M) || '').trim() || DEFAULT_MODEL;
 
 let CHUNKS = [];
