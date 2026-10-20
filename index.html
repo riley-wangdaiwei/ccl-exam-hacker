@@ -3,157 +3,165 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>CCL Exam Hacker — Contemporary Constitutional Law</title>
+<title>Contemporary Constitutional Law — The Exam Hacker</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <style>
-  :root { --sp-red: #E30613; --ink: #1a1a1a; --muted: #6b6b6b; }
+  :root { --sp-red: #E30613; --ink: #1a1a1a; --muted: #6b6b6b; --link: #1a0dab; }
   * { box-sizing: border-box; }
   body { margin: 0; background: #e8e8e8; color: var(--ink);
          font-family: Georgia, 'Times New Roman', serif; }
-  .doc { max-width: 960px; margin: 28px auto 60px; background: #fff;
-         box-shadow: 0 2px 14px rgba(0,0,0,.18); padding: 0 0 48px; }
-  .doc-head { padding: 34px 56px 0; }
-  .brand { font-size: 30px; font-weight: bold; letter-spacing: .5px; }
-  .redrule { height: 5px; background: var(--sp-red); margin-top: 10px; }
-  .meta { margin-top: 14px; font-size: 12.5px; letter-spacing: 2.5px;
-          text-transform: uppercase; color: var(--muted); }
-  h1 { font-size: 34px; margin: 18px 0 4px; letter-spacing: 1px; }
-  .subtitle { font-size: 15px; color: var(--muted); font-style: italic; margin-bottom: 6px; }
-  .body { padding: 0 56px; }
-  h2.sec { font-size: 15px; letter-spacing: 2px; text-transform: uppercase;
-           border-bottom: 1px solid #999; padding-bottom: 6px; margin: 34px 0 16px; }
-  h2.sec u { text-decoration-thickness: 2px; text-underline-offset: 4px; }
-  .searchrow { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 12px; align-items: center; }
-  input[type=text], input[type=password], select, textarea {
-    font-family: Georgia, serif; font-size: 15px; padding: 9px 12px;
-    border: 1px solid #bbb; border-radius: 2px; background: #fff; color: var(--ink); }
-  input[type=text] { flex: 1 1 280px; }
-  input[type=password] { flex: 1 1 240px; }
-  input[type=file] { font-family: Georgia, serif; font-size: 14px; }
-  button { font-family: Georgia, serif; font-size: 14px; letter-spacing: 1px;
-           padding: 10px 22px; background: #111; color: #fff; border: none;
-           border-radius: 2px; cursor: pointer; text-transform: uppercase; }
-  button:hover { background: var(--sp-red); }
-  button.ghost { background: #fff; color: #111; border: 1px solid #999; }
-  button:disabled { background: #999; cursor: wait; }
-  .filters { display: flex; gap: 10px; flex-wrap: wrap; font-size: 13px;
-             color: var(--muted); align-items: center; margin-bottom: 6px; }
-  .count { font-size: 13px; color: var(--muted); font-style: italic; margin: 10px 0; }
-  .extract { border: 1px solid #ddd; border-left: 4px solid var(--sp-red);
-             padding: 14px 18px; margin: 12px 0; cursor: pointer; background: #fff; }
-  .extract:hover { background: #fafafa; }
-  .extract .exno { font-size: 12px; letter-spacing: 2px; color: var(--muted);
-                   text-transform: uppercase; }
-  .tier { display: inline-block; font-size: 11px; letter-spacing: 1.5px; padding: 2px 8px;
-          text-transform: uppercase; margin-left: 8px; vertical-align: 1px; }
-  .tier-source { background: #111; color: #fff; }
-  .tier-my_note { background: #1a3a8f; color: #fff; }
-  .rel { display: inline-block; font-size: 11px; letter-spacing: 1.5px; padding: 2px 8px;
-         text-transform: uppercase; margin-left: 8px; vertical-align: 1px; color: #fff; }
-  .rel-supports { background: #1e6b34; }
-  .rel-qualifies { background: #9a6a00; }
-  .rel-counters { background: #a02020; }
-  .ainote { font-size: 14px; font-style: italic; color: #333; margin: 8px 0 4px;
-            border-left: 3px solid #ccc; padding-left: 10px; }
-  .cite { font-size: 13px; color: var(--muted); margin: 6px 0 8px; font-style: italic; }
-  .snip { font-size: 15px; line-height: 1.65; }
+  .doc { max-width: 900px; margin: 28px auto 60px; background: #fff;
+         box-shadow: 0 2px 14px rgba(0,0,0,.18); padding: 0 0 56px; }
+  /* ---- header, 1:1 with the professor's document ---- */
+  .doc-head { padding: 36px 64px 0; }
+  .headrow { display: flex; justify-content: space-between; align-items: flex-start; }
+  .brand { color: var(--sp-red); font-size: 34px; font-weight: bold; letter-spacing: .5px; }
+  .crestimg { height: 42px; vertical-align: -8px; margin-right: 10px; }
+  .brand .dot { font-size: 34px; }
+  .headmeta { text-align: right; font-style: italic; font-size: 15.5px; line-height: 1.5; }
+  .redrule { height: 8px; background: var(--sp-red); margin: 22px 0 0; }
+  h1.course { font-size: 21px; margin: 26px 0 14px; letter-spacing: .5px; text-align: center; }
+  .lect { font-size: 15.5px; text-align: center; line-height: 1.7; }
+  .redrule2 { height: 8px; background: var(--sp-red); margin: 26px 0 0; }
+  h2.session { font-size: 17px; margin: 30px 0 4px; text-align: center; font-weight: normal; }
+  /* ---- sections ---- */
+  .body { padding: 0 64px; font-size: 15.5px; line-height: 1.7; }
+  p.sechead { font-size: 15.5px; margin: 34px 0 10px; }
+  p.sechead u { text-underline-offset: 3px; }
+  p.sechead .note { font-style: italic; color: var(--muted); font-size: 14px; }
+  p { margin: 10px 0; }
+  ul.readings { list-style: none; padding: 0; margin: 8px 0; }
+  ul.readings li { margin: 6px 0; padding-left: 22px; text-indent: -22px; }
+  ul.readings li::before { content: "•  "; }
+  /* every control is a blue underlined link, like the hyperlinks in the document */
+  u.act, a.act { cursor: pointer; text-underline-offset: 3px; color: var(--link);
+                 text-decoration: underline; }
+  u.act:hover, a.act:hover { color: var(--sp-red); }
+  input.blank { border: none; border-bottom: 1px solid #999; font-family: Georgia, serif;
+                font-size: 16px; padding: 4px 2px; background: transparent; color: var(--ink);
+                width: 100%; }
+  input.blank:focus { outline: none; border-bottom: 2px solid var(--link); }
+  input.inline { border: none; border-bottom: 1px solid #999; font-family: Georgia, serif;
+                 font-size: 15px; background: transparent; color: var(--ink); width: 220px; }
+  input.inline:focus { outline: none; border-bottom: 2px solid var(--link); }
+  select.ul { border: none; background: transparent;
+              font-family: Georgia, serif; font-size: 15.5px; color: var(--link);
+              cursor: pointer; -webkit-appearance: none; appearance: none;
+              text-decoration: underline; text-underline-offset: 3px; }
+  select.ul:focus { outline: none; }
+  textarea.blank { width: 100%; min-height: 90px; border: 1px solid #bbb;
+                   font-family: Georgia, serif; font-size: 15px; padding: 10px 12px; }
+  .qline { margin: 14px 0; }
+  .qnum { font-weight: bold; }
+  .count { font-size: 13.5px; color: var(--muted); font-style: italic; }
+  .err { font-size: 14px; color: #a02020; margin: 8px 0; }
+  .hint { font-size: 13.5px; color: var(--muted); font-style: italic; }
+  /* documents, like the seminar file's DOCUMENT 1: ... */
+  .document { margin: 20px 0 26px; cursor: pointer; }
+  .document:hover .doctitle { color: var(--link); }
+  .doctitle { font-size: 17px; font-weight: bold; margin: 0 0 2px; }
+  .cite { font-size: 13.5px; color: var(--muted); font-style: italic; margin: 2px 0 6px; }
+  .snip { font-size: 15.5px; line-height: 1.7; }
   mark { background: #ffe58a; padding: 0 1px; }
+  .tier, .rel { font-size: 11px; letter-spacing: 1.5px; text-transform: uppercase;
+                vertical-align: 1px; }
+  .tier::before { content: "  ·  "; color: var(--muted); }
+  .rel-supports { color: #1e6b34; } .rel-qualifies { color: #9a6a00; } .rel-counters { color: #a02020; }
+  .rel::before { content: "  ·  "; color: var(--muted); }
+  .ainote { font-size: 14.5px; font-style: italic; color: #333; margin: 8px 0 4px;
+            border-left: 3px solid #ccc; padding-left: 10px; }
+  /* reader: a document page */
   #readerWrap { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.45);
                 overflow-y: auto; z-index: 10; }
-  #reader { max-width: 860px; margin: 40px auto; background: #fff; padding: 40px 56px;
-            box-shadow: 0 4px 24px rgba(0,0,0,.3); }
-  #reader .fulltext { font-size: 16px; line-height: 1.8; white-space: pre-wrap; }
-  .comment { border-top: 1px solid #ddd; padding: 12px 0; }
-  .comment .ctag { font-size: 11px; letter-spacing: 1.5px; text-transform: uppercase;
-                   color: #1a3a8f; }
-  .comment .cdate { font-size: 12px; color: var(--muted); margin-left: 8px; }
-  .comment p { margin: 6px 0 0; font-size: 15px; line-height: 1.6; }
-  #commentForm textarea { width: 100%; min-height: 90px; margin: 8px 0; }
-  .hint { font-size: 13px; color: var(--muted); font-style: italic; }
-  .err { font-size: 14px; color: #a02020; margin: 8px 0; }
-  .uplist { font-size: 14px; margin: 8px 0; }
-  .uplist .urow { display: flex; gap: 10px; align-items: center; padding: 6px 0;
-                  border-top: 1px solid #eee; }
-  .uplist button { padding: 4px 12px; font-size: 12px; }
-  .closeRow { text-align: right; margin-bottom: 8px; }
+  #reader { max-width: 860px; margin: 40px auto; background: #fff; padding: 44px 64px 56px;
+            box-shadow: 0 4px 24px rgba(0,0,0,.3); font-size: 15.5px; line-height: 1.75; }
+  #reader .fulltext { white-space: pre-wrap; }
+  .mnote { border-top: 1px solid #ddd; padding: 12px 0; }
+  .mnote .ctag { font-size: 11px; letter-spacing: 1.5px; text-transform: uppercase; color: #1a3a8f; }
+  .mnote .cdate { font-size: 12px; color: var(--muted); margin-left: 8px; }
+  .mnote p { margin: 6px 0 0; }
+  .closeRow { text-align: right; margin-bottom: 4px; font-size: 14px; }
+  .uplist .urow { padding: 4px 0; }
   @media (max-width: 640px) { .doc-head, .body, #reader { padding-left: 22px; padding-right: 22px; } }
 </style>
 </head>
 <body>
 <div class="doc">
   <div class="doc-head">
-    <div class="brand">Sciences Po</div>
+    <div class="headrow">
+      <div class="brand"><img src="crest.png" alt="" class="crestimg">SciencesPo<span class="dot">.</span></div>
+      <div class="headmeta">Année universitaire 2026/2027<br>Collège universitaire<br>Autumn Semester</div>
+    </div>
     <div class="redrule"></div>
-    <div class="meta">Année universitaire 2026/2027 &nbsp;·&nbsp; Collège universitaire &nbsp;·&nbsp; Autumn Semester</div>
-    <h1>CCL EXAM HACKER</h1>
-    <div class="subtitle">Contemporary Constitutional Law — an interactive source of truth. Every fragment traces back to its document.</div>
+    <h1 class="course">CONTEMPORARY CONSTITUTIONAL LAW</h1>
+    <div class="lect">Lectures: Gretchen Allen-Mestrallet<br>Seminars: Mbaye-Yacine Thiam, Ianis Tamoud</div>
+    <div class="redrule2"></div>
+    <h2 class="session">THE EXAM HACKER: An Interactive Study Document</h2>
   </div>
   <div class="body">
 
-    <h2 class="sec"><u>Search</u> the corpus</h2>
-    <div class="searchrow">
-      <input id="q" type="text" placeholder="a keyword — or a fuzzy point, e.g. 私人表达 vs 学校立场怎么区分">
-      <button id="go">Keyword</button>
-      <button id="goAI">AI 语义检索</button>
-    </div>
-    <div class="filters">
-      <label>Document <select id="fDoc"><option value="">all documents</option></select></label>
-      <label>Lecture <select id="fLec"><option value="">all</option></select></label>
-      <label>Tier <select id="fTier">
+    <p class="sechead"><u>FOCUS</u>: Can this document find, in seconds, the fragment your point needs?</p>
+    <p>In the exam you write from a point; this document finds your fragments. State a point — however rough — and every lecture, seminar, case and draft answers with what it holds. Nothing here argues for you; every fragment traces back to its source.</p>
+
+    <p class="sechead"><u>REQUIRED READINGS (in this document)</u> :</p>
+    <ul class="readings" id="readings"></ul>
+
+    <p class="sechead"><u>QUESTIONS</u> :</p>
+    <p class="qline"><span class="qnum">1.</span> State your point: <input id="q" class="blank" type="text" placeholder="e.g. how to distinguish an employee's private expression from the school's endorsement"></p>
+    <p class="qline"><span class="qnum">2.</span> Search within
+      <select id="fDoc" class="ul"><option value="">all documents</option></select>,
+      <select id="fLec" class="ul"><option value="">all lectures</option></select>,
+      <select id="fTier" class="ul">
         <option value="">sources + my notes</option>
         <option value="source">sources only</option>
         <option value="my_note">my notes only</option>
-      </select></label>
-    </div>
-    <div class="count" id="count"></div>
+      </select>
+      — <u class="act" id="go">keyword search</u> · <u class="act" id="goAI">AI semantic search</u>
+    </p>
+    <p class="count" id="count"></p>
     <div class="err" id="aiErr"></div>
-    <div id="results"></div>
 
-    <h2 class="sec"><u>AI</u> key</h2>
-    <div class="hint">For AI 语义检索. Your key is stored only in this browser — never sent anywhere except Google's Gemini API.</div>
-    <div class="searchrow">
-      <input id="apiKey" type="password" placeholder="Gemini API key (AIza…)">
-      <button id="saveKey">Save key</button>
-      <button id="clearKey" class="ghost">Clear</button>
-    </div>
-    <div class="hint" id="keyStatus"></div>
+    <p class="sechead"><u>DOCUMENTS</u> :</p>
+    <div id="results"><p class="hint">No question asked yet.</p></div>
 
-    <h2 class="sec"><u>Upload</u> sources</h2>
-    <div class="hint">Add your own PDFs (new lectures, cases, drafts). Parsed in your browser, searchable instantly, stored on this device only.</div>
-    <div class="searchrow">
-      <input type="file" id="upFile" accept="application/pdf">
-      <button id="upBtn">Upload &amp; index</button>
-    </div>
+    <p class="sechead"><u>MY NOTES</u> :</p>
+    <p class="hint">Notes written on the documents above. Each links back to the passage it glosses — click any DOCUMENT to read and annotate.</p>
+    <div id="notes"></div>
+
+    <p class="sechead"><u>ANNEX I</u> <span class="note">— API key</span></p>
+    <p>For <i>AI semantic search</i>. Your Gemini API key, stored in this browser only, never sent anywhere except Google's Gemini API:<br>
+      <input id="apiKey" class="inline" type="password" placeholder="AIza…">
+      <u class="act" id="saveKey">save</u> · <u class="act" id="clearKey">clear</u>
+      <span class="hint" id="keyStatus"></span>
+    </p>
+
+    <p class="sechead"><u>ANNEX II</u> <span class="note">— sources</span></p>
+    <p><u class="act" id="upLink">Upload a PDF</u> <span class="hint">— parsed in your browser, searchable at once, stored on this device only.</span>
+      <input type="file" id="upFile" accept="application/pdf" style="display:none">
+    </p>
     <div class="uplist" id="upList"></div>
 
-    <h2 class="sec"><u>My</u> notes</h2>
-    <div class="hint">Everything you comment while reading is saved in this browser, searchable above, and always linked back to the extract it discusses.</div>
-    <div id="notes"></div>
   </div>
 </div>
 
 <div id="readerWrap">
   <div id="reader">
-    <div class="closeRow"><button class="ghost" id="closeReader">Close ✕</button></div>
-    <div class="exno" id="rExno"></div>
-    <h2 id="rTitle" style="margin:6px 0"></h2>
+    <div class="closeRow"><u class="act" id="closeReader">close ✕</u></div>
+    <div class="doctitle" id="rTitle"></div>
     <div class="cite" id="rCite"></div>
     <div class="fulltext" id="rText"></div>
-    <h2 class="sec"><u>Comments</u></h2>
+    <p class="sechead"><u>MY NOTES</u> :</p>
     <div id="rComments"></div>
-    <h2 class="sec"><u>Add</u> a comment</h2>
-    <div class="hint">Select any passage above first — it will be quoted into your comment.</div>
-    <div id="commentForm">
-      <textarea id="cText" placeholder="Your analysis, question, or counterargument…"></textarea>
-      <div class="searchrow">
-        <select id="cTag">
-          <option value="note">My analysis / interpretation</option>
-          <option value="question">Question to investigate</option>
-          <option value="counterargument">Counterargument / objection</option>
-        </select>
-        <button id="cSave">Save comment</button>
-      </div>
-    </div>
+    <p>Add a marginal note — select any passage above first and it will be quoted:</p>
+    <textarea id="cText" class="blank" placeholder="Your analysis, question, or counterargument…"></textarea>
+    <p class="qline">
+      <select id="cTag" class="ul">
+        <option value="note">analysis / interpretation</option>
+        <option value="question">question to investigate</option>
+        <option value="counterargument">counterargument / objection</option>
+      </select>
+      &nbsp;—&nbsp; <u class="act" id="cSave">save note</u>
+    </p>
   </div>
 </div>
 
@@ -166,7 +174,7 @@ const loadJ = (k, fb) => { try { const v = JSON.parse(localStorage.getItem(k)); 
 const storeJ = (k, v) => localStorage.setItem(k, JSON.stringify(v));
 const GEMINI_MODEL = 'gemini-2.0-flash';
 
-let CHUNKS = [];          // unified: {id, dlabel, dtype, dfile, lecture, page, ps, pe, text, origin}
+let CHUNKS = [];
 let currentChunk = null;
 
 /* ============ corpus + uploads ============ */
@@ -183,30 +191,29 @@ function rebuildIndex(corpusDocs, corpusChunks){
       CHUNKS.push({ id: c.id, dlabel: u.name + ' (uploaded)', dtype: 'uploaded',
                     dfile: u.name, lecture: null, page: c.page, ps: c.ps, pe: c.pe,
                     text: c.text, origin: 'upload' });
-  initFilters(corpusDocs);
-  $('count').textContent = `${CHUNKS.length} fragments indexed. Type to search.`;
+  initFilters();
+  renderReadings(corpusDocs);
+  $('count').textContent = `${CHUNKS.length} fragments indexed. Ask a question above.`;
 }
-
-function initFilters(docs){
-  const seen = new Set();
+function renderReadings(docs){
+  const ups = loadJ(LS_U, []);
+  $('readings').innerHTML =
+    docs.map(d => `<li>${esc(d.label)} <span class="hint">(${d.doc_type.replace(/_/g,' ')})</span></li>`).join('') +
+    ups.map(u => `<li>${esc(u.name)} <span class="hint">(uploaded)</span></li>`).join('');
+}
+function initFilters(){
   const types = [...new Set(CHUNKS.map(c => c.dtype))];
   const lecs = [...new Set(CHUNKS.map(c => c.lecture).filter(x => x != null))].sort();
   $('fDoc').innerHTML = '<option value="">all documents</option>';
   for (const t of types) $('fDoc').insertAdjacentHTML('beforeend', `<option value="${t}">${t.replace(/_/g,' ')}</option>`);
-  $('fLec').innerHTML = '<option value="">all</option>';
-  for (const l of lecs) $('fLec').insertAdjacentHTML('beforeend', `<option value="${l}">Lecture ${l}</option>`);
+  $('fLec').innerHTML = '<option value="">all lectures</option>';
+  for (const l of lecs) $('fLec').insertAdjacentHTML('beforeend', `<option value="${l}">lecture ${l}</option>`);
 }
 
 /* ============ keyword search ============ */
-const tokenize = q => q.toLowerCase().split(/[^a-z0-9'\u4e00-\u9fff]+/).filter(t => t.length > 1);
+const tokenize = q => q.toLowerCase().split(/[^a-z0-9' - ]+/).filter(t => t.length > 1);
 const rxE = t => t.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 
-function scoreChunk(c, toks){
-  const t = c.text.toLowerCase();
-  let s = 0;
-  for (const tok of toks){ const n = t.split(tok).length - 1; if (!n) return -1; s += n; }
-  return s;
-}
 function keywordSearch(toks, docType, lecture, anyToken){
   const out = [];
   for (const c of CHUNKS){
@@ -254,26 +261,24 @@ function snippet(text, toks, len){
   for (const tok of toks) e = e.replace(new RegExp('(' + rxE(tok) + ')', 'gi'), '<mark>$1</mark>');
   return e;
 }
-const tierBadge = t => t === 'my_note'
-  ? '<span class="tier tier-my_note">My note</span>' : '<span class="tier tier-source">Source</span>';
-const relBadge = r => `<span class="rel rel-${r}">${r}</span>`;
+const tierTag = t => t === 'my_note' ? '<span class="tier">my note</span>' : '<span class="tier">source</span>';
+const relTag = r => `<span class="rel rel-${r}">${r}</span>`;
 
 function renderResults(list, toks, aiNotes){
   aiNotes = aiNotes || {};
   $('count').textContent = list.length
-    ? `${list.length} fragment${list.length > 1 ? 's' : ''} found`
-    : 'No fragments found — try fewer or different words.';
+    ? `${list.length} document${list.length > 1 ? 's' : ''} found`
+    : 'No documents found — try fewer or different words.';
   $('results').innerHTML = list.map((r, i) => {
     const note = aiNotes[String(r.id)];
-    return `<div class="extract" data-chunk="${esc(String(r.chunk_id != null ? r.chunk_id : r.id))}">
-      <span class="exno">Extract ${i+1}</span>${tierBadge(r.tier || 'source')}${note ? relBadge(note.relation) : ''}
-      ${r.kind === 'comment' ? `<span style="font-size:11px;letter-spacing:1.5px;text-transform:uppercase;color:#1a3a8f"> · ${esc(r.tag || 'note')}</span>` : ''}
-      <div class="cite">${esc(r.dlabel)} — p. ${r.page}${r.ps ? `, paras ${r.ps}–${r.pe}` : ''}</div>
+    return `<div class="document" data-chunk="${esc(String(r.chunk_id != null ? r.chunk_id : r.id))}">
+      <p class="doctitle">DOCUMENT ${i+1}: ${esc(r.dlabel)}${tierTag(r.tier || 'source')}${note ? relTag(note.relation) : ''}${r.kind === 'comment' ? `<span class="tier">${esc(r.tag || 'note')}</span>` : ''}</p>
+      <div class="cite">${esc(r.dfile)} — p. ${r.page}${r.ps ? `, paras ${r.ps}–${r.pe}` : ''}</div>
       ${note ? `<div class="ainote">${esc(note.note)}</div>` : ''}
       <div class="snip">${snippet(r.text, toks)}</div>
     </div>`;
   }).join('');
-  document.querySelectorAll('.extract').forEach(el =>
+  document.querySelectorAll('.document').forEach(el =>
     el.addEventListener('click', () => openReader(el.dataset.chunk)));
 }
 
@@ -298,9 +303,9 @@ async function doAISearch(){
   const key = (localStorage.getItem(LS_K) || '').trim();
   const q = $('q').value.trim();
   if (!q) return;
-  if (!key){ $('aiErr').textContent = 'Fill in your Gemini API key below first — AI 语义检索 needs it.'; return; }
+  if (!key){ $('aiErr').textContent = 'Enter your Gemini API key in ANNEX I first — AI semantic search needs it.'; return; }
   const btn = $('goAI');
-  btn.disabled = true; btn.textContent = '…';
+  btn.style.pointerEvents = 'none'; btn.style.opacity = .4;
   try {
     const toks = tokenize(q);
     const cands = keywordSearch(toks.length ? toks : ['the'], $('fDoc').value, $('fLec').value, true).slice(0, 30);
@@ -337,22 +342,21 @@ ${frags}`;
       order.push({ ...c, kind:'chunk', tier:'source' });
     }
     renderResults(order, toks, notes);
-    if (!order.length) $('count').textContent = 'AI found no relevant fragments — try rephrasing your point.';
+    if (!order.length) $('count').textContent = 'The AI found no relevant fragments — try rephrasing your point.';
   } catch(e){
-    $('aiErr').textContent = 'AI 检索失败：' + e.message;
+    $('aiErr').textContent = 'AI search failed: ' + e.message;
   } finally {
-    btn.disabled = false; btn.textContent = 'AI 语义检索';
+    btn.style.pointerEvents = ''; btn.style.opacity = '';
   }
 }
 
-/* ============ reader + comments ============ */
+/* ============ reader + marginalia ============ */
 function openReader(chunkId){
   const c = CHUNKS.find(x => String(x.id) === String(chunkId));
   if (!c) return;
   currentChunk = c;
-  $('rExno').textContent = 'Source · ' + c.dtype.replace(/_/g, ' ') + (c.origin === 'upload' ? ' · uploaded' : '');
-  $('rTitle').textContent = c.dlabel;
-  $('rCite').textContent = `${c.dfile} — p. ${c.page}${c.ps ? `, paras ${c.ps}–${c.pe}` : ''}`;
+  $('rTitle').textContent = c.dlabel + (c.origin === 'upload' ? '' : '');
+  $('rCite').textContent = `${c.dfile} — p. ${c.page}${c.ps ? `, paras ${c.ps}–${c.pe}` : ''} · ${c.dtype.replace(/_/g,' ')}`;
   $('rText').textContent = c.text;
   renderComments();
   $('cText').value = '';
@@ -363,9 +367,9 @@ const commentsFor = id => loadJ(LS_C, []).filter(m => String(m.chunk_id) === Str
 function renderComments(){
   const list = commentsFor(currentChunk.id);
   $('rComments').innerHTML = list.length ? list.map(m => `
-    <div class="comment"><span class="ctag">${esc(m.tag)}</span><span class="cdate">${esc(m.created_at)}</span>
+    <div class="mnote"><span class="ctag">${esc(m.tag)}</span><span class="cdate">${esc(m.created_at)}</span>
     <p>${esc(m.text).replace(/\n/g, '<br>')}</p></div>`).join('')
-    : '<div class="hint">No comments yet on this extract.</div>';
+    : '<p class="hint">No marginalia on this passage yet.</p>';
 }
 function closeReader(){ $('readerWrap').style.display = 'none'; document.body.style.overflow = ''; }
 function saveComment(){
@@ -384,16 +388,16 @@ function loadNotes(){
   const notes = loadJ(LS_C, []);
   $('notes').innerHTML = notes.length ? notes.map(m => {
     const c = CHUNKS.find(x => String(x.id) === String(m.chunk_id));
-    return `<div class="comment"><span class="ctag">${esc(m.tag)}</span><span class="cdate">${esc(m.created_at)}</span>
+    return `<div class="mnote"><span class="ctag">${esc(m.tag)}</span><span class="cdate">${esc(m.created_at)}</span>
       <div class="cite">${esc(c ? c.dlabel : '')}${c ? ' — p. ' + c.page : ''}</div>
       <p>${esc(m.text).replace(/\n/g, '<br>')}</p></div>`;
-  }).join('') : '<div class="hint">No notes yet. Open any extract and comment on it.</div>';
+  }).join('') : '<p class="hint">Nothing written yet.</p>';
 }
 
 /* ============ API key ============ */
 function refreshKeyStatus(){
   const k = (localStorage.getItem(LS_K) || '').trim();
-  $('keyStatus').textContent = k ? 'Key saved ✓ (stored only in this browser)' : 'No key saved.';
+  $('keyStatus').textContent = k ? '  key saved ✓ (this browser only)' : '  no key saved';
   if (k) $('apiKey').value = '';
 }
 $('saveKey').onclick = () => {
@@ -442,11 +446,11 @@ async function pdfToChunks(file){
   return { docId, name: file.name.replace(/\.pdf$/i, ''), chunks };
 }
 
-$('upBtn').onclick = async () => {
+$('upLink').onclick = () => $('upFile').click();
+$('upFile').addEventListener('change', async () => {
   const f = $('upFile').files[0];
   if (!f) return;
-  const btn = $('upBtn');
-  btn.disabled = true; btn.textContent = 'Parsing…';
+  $('upLink').style.pointerEvents = 'none'; $('upLink').style.opacity = .4;
   try {
     const { docId, name, chunks } = await pdfToChunks(f);
     if (!chunks.length) throw new Error('no text found in this PDF');
@@ -459,18 +463,16 @@ $('upBtn').onclick = async () => {
   } catch(e){
     alert('Upload failed: ' + e.message);
   } finally {
-    btn.disabled = false; btn.textContent = 'Upload & index';
+    $('upLink').style.pointerEvents = ''; $('upLink').style.opacity = '';
   }
-};
+});
 function renderUploads(){
   const ups = loadJ(LS_U, []);
   $('upList').innerHTML = ups.length ? ups.map(u =>
-    `<div class="urow"><span>📄 ${esc(u.name)} — ${u.chunks.length} fragments</span>
-     <button class="ghost" data-del="${u.docId}">Delete</button></div>`).join('')
-    : '<div class="hint">No uploaded documents yet.</div>';
+    `<div class="urow">• ${esc(u.name)} — ${u.chunks.length} fragments &nbsp;<u class="act" data-del="${u.docId}">delete</u></div>`).join('')
+    : '<p class="hint">No uploaded documents yet.</p>';
   document.querySelectorAll('[data-del]').forEach(b => b.onclick = () => {
     storeJ(LS_U, loadJ(LS_U, []).filter(u => u.docId !== b.dataset.del));
-    // drop its comments too
     storeJ(LS_C, loadJ(LS_C, []).filter(m => !String(m.chunk_id).startsWith(b.dataset.del)));
     boot(true); renderUploads();
   });
@@ -482,7 +484,7 @@ function boot(keepQuery){
   rebuildIndex(corpusDocs, corpusChunks);
   renderUploads();
   loadNotes();
-  if (!keepQuery) $('count').textContent = `${CHUNKS.length} fragments indexed. Type to search.`;
+  if (!keepQuery) $('count').textContent = `${CHUNKS.length} fragments indexed. Ask a question above.`;
 }
 $('go').onclick = doKeywordSearch;
 $('goAI').onclick = doAISearch;
