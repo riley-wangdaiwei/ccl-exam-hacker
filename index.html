@@ -132,7 +132,10 @@
     <p>For <i>AI semantic search</i>. Your Gemini API key, stored in this browser only, never sent anywhere except Google's Gemini API:<br>
       <input id="apiKey" class="inline" type="password" placeholder="AIza…">
       <u class="act" id="saveKey">save</u> · <u class="act" id="clearKey">clear</u>
-      <span class="hint" id="keyStatus"></span>
+      <span class="hint" id="keyStatus"></span><br>
+      Model: <input id="apiModel" class="inline" type="text" style="width:220px" placeholder="gemini-2.0-flash">
+      <u class="act" id="saveModel">save</u>
+      <span class="hint" id="modelStatus"></span>
     </p>
 
     <p class="sechead"><u>ANNEX II</u> <span class="note">— sources</span></p>
@@ -169,10 +172,11 @@
 /* ============ storage ============ */
 const $ = id => document.getElementById(id);
 const esc = s => String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;');
-const LS_C = 'ccl-comments-v1', LS_K = 'ccl-gemini-key', LS_U = 'ccl-uploads-v1';
 const loadJ = (k, fb) => { try { const v = JSON.parse(localStorage.getItem(k)); return v == null ? fb : v; } catch(e){ return fb; } };
 const storeJ = (k, v) => localStorage.setItem(k, JSON.stringify(v));
-const GEMINI_MODEL = 'gemini-2.0-flash';
+const LS_C = 'ccl-comments-v1', LS_K = 'ccl-gemini-key', LS_U = 'ccl-uploads-v1', LS_M = 'ccl-gemini-model';
+const DEFAULT_MODEL = 'gemini-2.0-flash';
+const geminiModel = () => (localStorage.getItem(LS_M) || '').trim() || DEFAULT_MODEL;
 
 let CHUNKS = [];
 let currentChunk = null;
@@ -325,7 +329,7 @@ Rules:
 Student point: """${q}"""
 Fragments:
 ${frags}`;
-    const resp = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent?key=${encodeURIComponent(key)}`, {
+    const resp = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${geminiModel()}:generateContent?key=${encodeURIComponent(key)}`, {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }],
         generationConfig: { responseMimeType: 'application/json', temperature: 0.2 } })
@@ -407,6 +411,15 @@ $('saveKey').onclick = () => {
   refreshKeyStatus();
 };
 $('clearKey').onclick = () => { localStorage.removeItem(LS_K); refreshKeyStatus(); };
+function refreshModelStatus(){
+  $('modelStatus').textContent = '  using: ' + geminiModel();
+}
+$('saveModel').onclick = () => {
+  const v = $('apiModel').value.trim();
+  if (v) localStorage.setItem(LS_M, v); else localStorage.removeItem(LS_M);
+  $('apiModel').value = '';
+  refreshModelStatus();
+};
 
 /* ============ upload PDFs ============ */
 if (window.pdfjsLib) pdfjsLib.GlobalWorkerOptions.workerSrc =
@@ -493,6 +506,7 @@ $('closeReader').onclick = closeReader;
 $('readerWrap').addEventListener('click', e => { if (e.target.id === 'readerWrap') closeReader(); });
 $('cSave').onclick = saveComment;
 refreshKeyStatus();
+refreshModelStatus();
 
 fetch('corpus.json').then(r => r.json()).then(d => {
   corpusDocs = d.docs; corpusChunks = d.chunks;
