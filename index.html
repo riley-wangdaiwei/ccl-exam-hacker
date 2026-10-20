@@ -47,7 +47,6 @@
   .cite { font-size: 13px; color: var(--muted); margin: 6px 0 8px; font-style: italic; }
   .snip { font-size: 15px; line-height: 1.65; }
   mark { background: #ffe58a; padding: 0 1px; }
-  /* reader */
   #readerWrap { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.45);
                 overflow-y: auto; z-index: 10; }
   #reader { max-width: 860px; margin: 40px auto; background: #fff; padding: 40px 56px;
@@ -76,7 +75,7 @@
   <div class="body">
     <h2 class="sec"><u>Search</u> the corpus</h2>
     <div class="searchrow">
-      <input id="q" type="text" placeholder='e.g. reasonable observer — or a fuzzy idea like "private prayer vs endorsement"'>
+      <input id="q" type="text" placeholder="e.g. reasonable observer">
       <button id="go">Search</button>
     </div>
     <div class="filters">
@@ -92,7 +91,7 @@
     <div id="results"></div>
 
     <h2 class="sec"><u>My</u> notes</h2>
-    <div class="hint">Everything you comment while reading is saved here, searchable above, and always linked back to the extract it discusses.</div>
+    <div class="hint">Everything you comment while reading is saved in this browser, searchable above, and always linked back to the extract it discusses.</div>
     <div id="notes"></div>
   </div>
 </div>
@@ -124,89 +123,163 @@
 
 <script>
 const $ = id => document.getElementById(id);
-let currentChunk = null;
+const esc = s => String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;');
+const LS = 'ccl-comments-v1';
+let DOCS = [], CHUNKS = [], DOCBYID = {}, currentChunk = null;
 
-async function api(path, opts) {
-  const r = await fetch(path, opts);
-  if (!r.ok) throw new Error(await r.text());
-  return r.json();
+const loadComments = () => { try { return JSON.parse(localStorage.getItem(LS) || '[]'); } catch(e){ return []; } };
+const storeComments = list => localStorage.setItem(LS, JSON.stringify(list));
+
+function tokenize(q){ return q.toLowerCase().split(/[^a-z0-9']+/).filter(t => t.length > 1); }
+function rxEscape(t){ return t.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); }
+
+function searchChunks(toks, docType, lecture){
+  const out = [];
+  for (const c of CHUNKS){
+    const doc = DOCBYID[c.doc_id];
+    if (docType && doc.doc_type !== docType) continue;
+    if (lecture && String(doc.lecture) !== lecture) continue;
+    const t = c.text.toLowerCase();
+    let score = 0, ok = true;
+    for (const tok of toks){
+      const n = t.split(tok).length - 1;
+      if (!n){ ok = false; break; }
+      score += n;
+    }
+    if (ok) out.push({ kind:'chunk', id:c.id, chunk_id:c.id, tier:'source',
+      doc_label:doc.label, doc_type:doc.doc_type, page:c.page,
+      para_start:c.para_start, para_end:c.para_end, score });
+  }
+  out.sort((a,b) => b.score - a.score);
+  return out.slice(0, 40);
 }
-const esc = s => s.replace(/&/g,'&amp;').replace(/</g,'&lt;');
 
-async function initFilters() {
-  const docs = await api('/api/docs');
-  const types = [...new Set(docs.map(d => d.doc_type))];
-  const lecs = [...new Set(docs.map(d => d.lecture).filter(x => x != null))].sort();
-  for (const t of types) $('fDoc').insertAdjacentHTML('beforeend', `<option value="${t}">${t.replace(/_/g,' ')}</option>`);
-  for (const l of lecs) $('fLec').insertAdjacentHTML('beforeend', `<option value="${l}">Lecture ${l}</option>`);
+function searchComments(toks){
+  const out = [];
+  for (const m of loadComments()){
+    const t = m.text.toLowerCase();
+    let score = 0, ok = true;
+    for (const tok of toks){
+      const n = t.split(tok).length - 1;
+      if (!n){ ok = false; break; }
+      score += n;
+    }
+    if (!ok) continue;
+    const c = CHUNKS.find(x => x.id === m.chunk_id);
+    const doc = c ? DOCBYID[c.doc_id] : null;
+    out.push({ kind:'comment', id:m.id, chunk_id:m.chunk_id, tier:'my_note', tag:m.tag,
+      doc_label: doc ? doc.label : 'unknown document', page: c ? c.page : '–', score });
+  }
+  out.sort((a,b) => b.score - a.score);
+  return out.slice(0, 20);
 }
 
-function tierBadge(t) {
+function snippetForChunk(id, toks){
+  const c = CHUNKS.find(x => x.id === id);
+  const low = c.text.toLowerCase();
+  let idx = -1;
+  for (const tok of toks){ const i = low.indexOf(tok); if (i >= 0 && (idx < 0 || i < idx)) idx = i; }
+  if (idx < 0) idx = 0;
+  const start = Math.max(0, idx - 90);
+  let s = c.text.slice(start, start + 300);
+  if (start > 0) s = '…' + s;
+  if (start + 300 < c.text.length) s += '…';
+  let e = esc(s);
+  for (const tok of toks) e = e.replace(new RegExp('(' + rxEscape(tok) + ')', 'gi'), '<mark>$1</mark>');
+  return e;
+}
+function snippetForComment(m, toks){
+  let e = esc(m.text.slice(0, 280));
+  for (const tok of toks) e = e.replace(new RegExp('(' + rxEscape(tok) + ')', 'gi'), '<mark>$1</mark>');
+  return e;
+}
+
+function tierBadge(t){
   return t === 'my_note'
     ? '<span class="tier tier-my_note">My note</span>'
     : '<span class="tier tier-source">Source</span>';
 }
 
-async function doSearch() {
+function doSearch(){
   const q = $('q').value.trim();
   if (!q) return;
-  const p = new URLSearchParams({ q,
-    doc_type: $('fDoc').value, lecture: $('fLec').value, tier: $('fTier').value });
-  const res = await api('/api/search?' + p);
-  $('count').textContent = res.length ? `${res.length} fragment${res.length>1?'s':''} found` : 'No fragments found — try fewer or different words.';
+  const toks = tokenize(q);
+  if (!toks.length) return;
+  const tier = $('fTier').value, docType = $('fDoc').value, lecture = $('fLec').value;
+  let res = [];
+  if (tier !== 'my_note') res = res.concat(searchChunks(toks, docType, lecture));
+  if (tier !== 'source' && !docType) res = res.concat(searchComments(toks));
+  res.sort((a,b) => b.score - a.score);
+  $('count').textContent = res.length
+    ? `${res.length} fragment${res.length > 1 ? 's' : ''} found`
+    : 'No fragments found — try fewer or different words.';
   $('results').innerHTML = res.map((r, i) => `
-    <div class="extract" data-kind="${r.kind}" data-id="${r.id}" data-chunk="${r.chunk_id || r.id}">
+    <div class="extract" data-chunk="${r.chunk_id}">
       <span class="exno">Extract ${i+1}</span>${tierBadge(r.tier)}
-      ${r.kind==='comment' ? `<span class="ctag" style="font-size:11px;letter-spacing:1.5px;text-transform:uppercase;color:#1a3a8f"> · ${esc(r.tag||'note')}</span>` : ''}
+      ${r.kind === 'comment' ? `<span style="font-size:11px;letter-spacing:1.5px;text-transform:uppercase;color:#1a3a8f"> · ${esc(r.tag || 'note')}</span>` : ''}
       <div class="cite">${esc(r.doc_label)} — p. ${r.page}${r.para_start ? `, paras ${r.para_start}–${r.para_end}` : ''}</div>
-      <div class="snip">${r.snippet}</div>
+      <div class="snip">${r.kind === 'comment'
+        ? snippetForComment(loadComments().find(m => m.id === r.id), toks)
+        : snippetForChunk(r.chunk_id, toks)}</div>
     </div>`).join('');
-  document.querySelectorAll('.extract').forEach(el => el.addEventListener('click', () => {
-    openReader(+el.dataset.chunk);
-  }));
+  document.querySelectorAll('.extract').forEach(el =>
+    el.addEventListener('click', () => openReader(+el.dataset.chunk)));
 }
 
-async function openReader(id) {
-  const c = await api('/api/chunk/' + id);
-  currentChunk = c;
-  $('rExno').textContent = 'Source · ' + c.doc_type.replace(/_/g, ' ');
-  $('rTitle').textContent = c.label;
-  $('rCite').textContent = `${c.filename} — p. ${c.page}, paras ${c.para_start}–${c.para_end}`;
+function openReader(chunkId){
+  const c = CHUNKS.find(x => x.id === chunkId);
+  if (!c) return;
+  const doc = DOCBYID[c.doc_id];
+  currentChunk = { ...c, doc };
+  $('rExno').textContent = 'Source · ' + doc.doc_type.replace(/_/g, ' ');
+  $('rTitle').textContent = doc.label;
+  $('rCite').textContent = `${doc.filename} — p. ${c.page}, paras ${c.para_start}–${c.para_end}`;
   $('rText').textContent = c.text;
-  renderComments(c.comments);
+  renderComments();
   $('cText').value = '';
   $('readerWrap').style.display = 'block';
   document.body.style.overflow = 'hidden';
 }
-function renderComments(list) {
+function commentsFor(id){ return loadComments().filter(m => m.chunk_id === id); }
+function renderComments(){
+  const list = commentsFor(currentChunk.id);
   $('rComments').innerHTML = list.length ? list.map(m => `
     <div class="comment"><span class="ctag">${esc(m.tag)}</span><span class="cdate">${esc(m.created_at)}</span>
-    <p>${esc(m.text).replace(/\n/g,'<br>')}</p></div>`).join('')
+    <p>${esc(m.text).replace(/\n/g, '<br>')}</p></div>`).join('')
     : '<div class="hint">No comments yet on this extract.</div>';
 }
-function closeReader() { $('readerWrap').style.display = 'none'; document.body.style.overflow = ''; }
+function closeReader(){ $('readerWrap').style.display = 'none'; document.body.style.overflow = ''; }
 
-async function saveComment() {
+function saveComment(){
   const text = $('cText').value.trim();
   if (!text || !currentChunk) return;
   const sel = window.getSelection().toString().trim();
   const body = sel ? `> ${sel}\n\n${text}` : text;
-  const saved = await api('/api/comments', { method: 'POST',
-    headers: {'Content-Type':'application/json'},
-    body: JSON.stringify({ chunk_id: currentChunk.id, text: body, tag: $('cTag').value }) });
-  const list = await api('/api/comments?chunk_id=' + currentChunk.id);
-  renderComments(list);
+  const list = loadComments();
+  list.unshift({ id: Date.now(), chunk_id: currentChunk.id, text: body,
+    tag: $('cTag').value, created_at: new Date().toISOString().slice(0, 16).replace('T', ' ') });
+  storeComments(list);
   $('cText').value = '';
+  renderComments();
   loadNotes();
 }
 
-async function loadNotes() {
-  const notes = await api('/api/comments');
-  $('notes').innerHTML = notes.length ? notes.map(m => `
-    <div class="comment"><span class="ctag">${esc(m.tag)}</span><span class="cdate">${esc(m.created_at)}</span>
-    <div class="cite">${esc(m.doc_label)} — p. ${m.page}</div>
-    <p>${esc(m.text).replace(/\n/g,'<br>')}</p></div>`).join('')
-    : '<div class="hint">No notes yet. Open any extract and comment on it.</div>';
+function loadNotes(){
+  const notes = loadComments();
+  $('notes').innerHTML = notes.length ? notes.map(m => {
+    const c = CHUNKS.find(x => x.id === m.chunk_id);
+    const doc = c ? DOCBYID[c.doc_id] : null;
+    return `<div class="comment"><span class="ctag">${esc(m.tag)}</span><span class="cdate">${esc(m.created_at)}</span>
+      <div class="cite">${esc(doc ? doc.label : '')}${c ? ' — p. ' + c.page : ''}</div>
+      <p>${esc(m.text).replace(/\n/g, '<br>')}</p></div>`;
+  }).join('') : '<div class="hint">No notes yet. Open any extract and comment on it.</div>';
+}
+
+function initFilters(){
+  const types = [...new Set(DOCS.map(d => d.doc_type))];
+  const lecs = [...new Set(DOCS.map(d => d.lecture).filter(x => x != null))].sort();
+  for (const t of types) $('fDoc').insertAdjacentHTML('beforeend', `<option value="${t}">${t.replace(/_/g, ' ')}</option>`);
+  for (const l of lecs) $('fLec').insertAdjacentHTML('beforeend', `<option value="${l}">Lecture ${l}</option>`);
 }
 
 $('go').onclick = doSearch;
@@ -214,7 +287,13 @@ $('q').addEventListener('keydown', e => { if (e.key === 'Enter') doSearch(); });
 $('closeReader').onclick = closeReader;
 $('readerWrap').addEventListener('click', e => { if (e.target.id === 'readerWrap') closeReader(); });
 $('cSave').onclick = saveComment;
-initFilters().then(loadNotes);
+
+fetch('corpus.json').then(r => r.json()).then(d => {
+  DOCS = d.docs; CHUNKS = d.chunks;
+  DOCBYID = Object.fromEntries(DOCS.map(x => [x.id, x]));
+  initFilters(); loadNotes();
+  $('count').textContent = `${CHUNKS.length} fragments indexed across ${DOCS.length} documents. Type to search.`;
+}).catch(() => { $('count').textContent = 'Could not load corpus.json.'; });
 </script>
 </body>
 </html>
